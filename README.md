@@ -16,3 +16,14 @@ Installation steps:
 Now that the GUI is installed, you can launch it by executing
 `worm_annotator` in your terminal window (provided the `Worm_annotation`
 environment is active)
+
+
+### Updating an existing installation
+
+Assuming that this code was cloned or donwloaded to `~/behavgenom_repos/WellAnnotator` and that the `wellannotator` environment has already been created, you can update the code by executing
+```bash
+cd ~/Worm_annotation
+conda activate Worm_annotation
+git pull
+pip install -e .
+```
