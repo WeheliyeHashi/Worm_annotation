@@ -4,7 +4,7 @@ setuptools.setup(
     name='WormAnnotation',
     version='0.0.1',
     description='Tools to annotate worms',
-    url='',
+    url='https://github.com/WeheliyeHashi/Worm_annotation.git',
     author='Weheliye Hashi',
     author_email='w.weheliye@ic.ac.uk',
     license='MIT',
