@@ -20,7 +20,7 @@ environment is active)
 
 ### Updating an existing installation
 
-Assuming that this code was cloned or donwloaded to and that the `Worm_annotation` environment has already been created, you can update the code by executing
+Assuming that this code was cloned or donwloaded to desktop and that the `Worm_annotation` environment has already been created, you can update the code by executing
 ```bash
 cd ~/Worm_annotation
 conda activate Worm_annotation
