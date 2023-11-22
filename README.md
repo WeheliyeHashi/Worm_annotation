@@ -9,4 +9,9 @@ Installation steps:
 * conda env create -f requirements.yml
 * conda activate Worm_annotation
 * pip install -e .
-* worm_annotator
+
+## Starting the program
+
+Now that the GUI is installed, you can launch it by executing
+`worm_annotator` in your terminal window (provided the `Worm_annotation`
+environment is active)
