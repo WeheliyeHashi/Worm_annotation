@@ -1,0 +1,8 @@
+README.md
+setup.py
+WormAnnotation.egg-info/PKG-INFO
+WormAnnotation.egg-info/SOURCES.txt
+WormAnnotation.egg-info/dependency_links.txt
+WormAnnotation.egg-info/entry_points.txt
+WormAnnotation.egg-info/not-zip-safe
+WormAnnotation.egg-info/top_level.txt

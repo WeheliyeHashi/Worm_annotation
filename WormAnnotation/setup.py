@@ -4,7 +4,7 @@ setuptools.setup(
     name='WormAnnotation',
     version='0.0.1',
     description='Tools to annotate worms',
-    url='https://github.com/WeheliyeHashi/Worm_annotation.git',
+    url='',
     author='Weheliye Hashi',
     author_email='w.weheliye@ic.ac.uk',
     license='MIT',
@@ -13,7 +13,7 @@ setuptools.setup(
     entry_points={
         "console_scripts": [
             "worm_annotator="
-            + "WormAnnotation.worm_annotation"
+            + "worm_annotation"
 
         ]
     },

@@ -1,0 +1,2 @@
+[console_scripts]
+worm_annotator = WormAnnotation.worm_annotation
