@@ -1,0 +1,14 @@
+name: Worm_annotation
+channels:
+  - anaconda
+dependencies:
+  - python=3.9
+  - h5py
+  - pathlib
+  - scipy
+  - pip
+  - numpy
+  - jupyter
+
+  - pip:
+    - napari
