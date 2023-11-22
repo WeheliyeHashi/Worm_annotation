@@ -13,7 +13,7 @@ setuptools.setup(
     entry_points={
         "console_scripts": [
             "worm_annotator="
-            + "worm_annotation"
+            "WormAnnotation.worm_annotation"
 
         ]
     },

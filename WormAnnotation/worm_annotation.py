@@ -1,7 +1,7 @@
 #%%
 
 import napari
-from _dock_widget import Training_label
+from WormAnnotation._dock_widget import Training_label
 import warnings
 warnings.filterwarnings("ignore")
 
