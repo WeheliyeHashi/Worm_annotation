@@ -5,6 +5,7 @@ This is a Gui to annotate deeptangle labels.
 
 Installation steps:
 * git clone, or download, this repository in a folder of your computer
+* git clone https://github.com/WeheliyeHashi/Worm_annotation.git
 * open a terminal window in that folder
 * conda env create -f requirements.yml
 * conda activate Worm_annotation
