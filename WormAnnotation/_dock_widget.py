@@ -19,7 +19,7 @@ class Training_label(QWidget):
 
         self.lastdir =''
        # print(self.lastdir)
-        self.lastfile = '/home/weheliye@cscdom.csc.mrc.ac.uk/Desktop/Correct-Training-Label/Training_data' 
+        self.lastfile = '' 
         self.basename = ''
         self.sub_seg_x =[]
         self.sub_seg_y = []
@@ -98,8 +98,8 @@ class Training_label(QWidget):
         msg.setWindowTitle("Error")
         msg.exec_()
     def _add_models(self):
-        fileNames, _ = QFileDialog.getOpenFileNames(self, 'Multiple File', self.lastdir, '*.hdf5', options=QtWidgets.QFileDialog.DontUseNativeDialog)
-        print(fileNames, 'Hashi')
+        fileNames, _ = QFileDialog.getOpenFileNames(self, 'Multiple File', self.lastdir, '*.hdf5')
+        #print(fileNames, 'Hashi')
         #fileNames = ['Training_data/skeletonNN.hdf5']
         for file in fileNames:
             self.lastdir = os.path.dirname(file)
