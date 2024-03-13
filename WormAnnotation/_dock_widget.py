@@ -1,9 +1,9 @@
 from napari_plugin_engine import napari_hook_implementation
-from qtpy.QtWidgets import QWidget, QVBoxLayout, QPushButton, QFileDialog, QRadioButton, QHBoxLayout, QLabel, QLineEdit
+from qtpy.QtWidgets import QWidget, QVBoxLayout, QPushButton, QFileDialog, QRadioButton, QHBoxLayout, QLabel, QLineEdit, QShortcut
 from qtpy.QtCore import QDir
 from magicgui import magic_factory
 from qtpy.QtWidgets import QGridLayout
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon,QKeySequence
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5 import QtWidgets
 import numpy as np
@@ -41,6 +41,7 @@ class Training_label(QWidget):
         next_label_btn.setFixedWidth(200)
         next_label_btn.setStyleSheet(" color: rgb(0, 0, 0); font-size: 20px")
         next_label_btn.clicked.connect(self._next_label)
+        next_label_btn.setToolTip("Shortcut: .")
 
 
         #%% Bad Label 
@@ -49,6 +50,7 @@ class Training_label(QWidget):
         prev_label_btn.setFixedWidth(200)
         prev_label_btn.setStyleSheet("color: rgb(0, 0, 0); font-size: 20px")
         prev_label_btn.clicked.connect(self._prev_label)
+        prev_label_btn.setToolTip("Shortcut: ,")
 
         #%% Save Changes 
         self.save_label_btn = QPushButton("Save changes")
@@ -56,10 +58,11 @@ class Training_label(QWidget):
         self.save_label_btn.setFixedWidth(200)
         self.save_label_btn.setStyleSheet("background-color: green ; color: rgb(255, 255, 255); font-size: 20px")
         self.save_label_btn.clicked.connect(self._save_label)
+        self.save_label_btn.setToolTip("Shortcut: S")
         
         #%% Labels training 
         self.Training_label_text = QLabel('Label number: ')
-        self.Training_label_text.setStyleSheet("color: rgb(0, 0, 0); font-size: 20px")
+        self.Training_label_text.setStyleSheet("color: rgb(255, 255, 255); font-size: 20px")
 
         #%%  Delete item 
         self.delete_btn = QPushButton("Delete clip")
@@ -67,10 +70,11 @@ class Training_label(QWidget):
         self.delete_btn.setFixedWidth(200)
         self.delete_btn.setStyleSheet("background-color: red ; color: rgb(255, 255, 255); font-size: 20px")
         self.delete_btn.clicked.connect(self._delete_clip_)
+        self.delete_btn.setToolTip("Shortcut: D")
 
         #%% String
         self.text_label = QLineEdit('')
-        self.text_label.setStyleSheet("color: rgb(0, 0, 0); font-size: 20px")
+        self.text_label.setStyleSheet("color: rgb(255, 255, 255); font-size: 20px")
         self.text_label.editingFinished.connect(lambda: self.pressenter())
 
 
@@ -88,6 +92,18 @@ class Training_label(QWidget):
         self.layout().addWidget(self.delete_btn)
         
         #self.layout().addLayout(hbox)
+        
+
+        """ Short cut keys """
+        shortcut = QShortcut(QKeySequence('D'), self)
+        shortcut.activated.connect(self._delete_clip_)
+        shortcut = QShortcut(QKeySequence('S'), self)
+        shortcut.activated.connect(self._save_label)
+        shortcut = QShortcut(QKeySequence(','), self)
+        shortcut.activated.connect(self._prev_label)
+        shortcut = QShortcut(QKeySequence('.'), self)
+        shortcut.activated.connect(self._next_label)
+
 
        # self.layout().addWidget(model_btn)
     def _message_error(self):
@@ -126,7 +142,7 @@ class Training_label(QWidget):
         self._show_images(0)
         print(self.number_of_labels)
         self.total_num_images = self.number_of_labels-1
-        self.Training_label_text.setText(f'Lable number: {self.row_num} out of {self.number_of_labels-1}')
+        self.Training_label_text.setText(f'Label number: {self.row_num} out of {self.number_of_labels-1}')
         self.text_label.setText(f'{self.row_num}')
     
     def pressenter(self):
@@ -136,7 +152,7 @@ class Training_label(QWidget):
         row= self.row_num
         self._update_label()
         self._show_images(row)
-        self.Training_label_text.setText(f'Lable number: {self.row_num} out of {self.number_of_labels-1}')
+        self.Training_label_text.setText(f'Label number: {self.row_num} out of {self.number_of_labels-1}')
         #self.Training_label_text.setText(f'Lable number: {self.row_num} out of {self.number_of_labels-1}')
     
     def _smooth_data(self, x, y, length=49):
@@ -184,8 +200,9 @@ class Training_label(QWidget):
                         self.row_num=self.row_num-1
                     else:
                         self.row_num = 0 
-                    self.Training_label_text.setText(f'Lable number: {self.row_num} out of {self.number_of_labels-1}')
+                    self.Training_label_text.setText(f'Label number: {self.row_num} out of {self.number_of_labels-1}')
                     self.text_label.setText(f'{self.row_num}')
+                self._next_label()
             else: 
                   with h5py.File(os.path.join(self.lastdir, filename), 'a') as f, h5py.File((self.lastfile), 'a') as f_r:
                     # create group for arrays
@@ -204,8 +221,9 @@ class Training_label(QWidget):
                         self.row_num=self.row_num-1
                     else:
                         self.row_num = 0 
-                    self.Training_label_text.setText(f'Lable number: {self.row_num} out of {self.number_of_labels-1}')
+                    self.Training_label_text.setText(f'Label number: {self.row_num} out of {self.number_of_labels-1}')
                     self.text_label.setText(f'{self.row_num}')
+                  self._next_label()
 
    
 
@@ -233,7 +251,7 @@ class Training_label(QWidget):
             row= self.row_num
             self._update_label()
             self._show_images(row)
-            self.Training_label_text.setText(f'Lable number: {self.row_num} out of {self.number_of_labels-1}')
+            self.Training_label_text.setText(f'Label number: {self.row_num} out of {self.number_of_labels-1}')
             self.text_label.setText(f'{self.row_num}')
         else:
             self.row_num=-1
@@ -248,7 +266,7 @@ class Training_label(QWidget):
             row= self.row_num
             self._update_label()
             self._show_images(row)
-            self.Training_label_text.setText(f'Lable number: {self.row_num} out of {self.number_of_labels-1}')
+            self.Training_label_text.setText(f'Label number: {self.row_num} out of {self.number_of_labels-1}')
             self.text_label.setText(f'{self.row_num}')
         else:
             self.row_num = self.number_of_labels-1
@@ -308,6 +326,7 @@ class Training_label(QWidget):
                         self.row_num=self.row_num-1
                     else:
                         self.row_num = 0 
-                    self.Training_label_text.setText(f'Lable number: {self.row_num} out of {self.number_of_labels-1}')
+                    self.Training_label_text.setText(f'Label number: {self.row_num} out of {self.number_of_labels-1}')
                     self.text_label.setText(f'{self.row_num}')
+         self._next_label()
 
