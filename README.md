@@ -1,6 +1,6 @@
 # Worm_annotation
 
-This is a Gui to annotate deeptangle labels.
+This is a GUI to annotate deeptangle labels.
 ## Installation
 
 Installation steps:
