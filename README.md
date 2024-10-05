@@ -32,3 +32,15 @@ conda activate Worm_annotation
 git pull
 pip install -e .
 ```
+```
+└── 📁Project_1
+    └── 📁AuxiliaryFiles
+        └── 📁CTRL - untreated
+            └── 📁time 0h
+                └── metadata_source.xlsx
+    └── 📁RawVideos
+        └── 📁CTRL - untreated
+            └── 📁time 0h
+                
+
+```

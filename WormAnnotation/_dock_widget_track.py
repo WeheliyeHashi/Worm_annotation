@@ -240,6 +240,7 @@ class Training_label(QWidget):
                 dataset_name = self.name_of_labels[
                     self.row_num
                 ]  # f'array_{self.row_num}'
+                print(dataset_name)
                 xtrain_group.create_dataset(
                     dataset_name,
                     data=self.viewer.layers["image"].data,
@@ -257,6 +258,7 @@ class Training_label(QWidget):
                 # print(dataset_name, self.total_num_images, self.number_of_labels-1)
                 del f_r["x_train"][dataset_name]
                 del f_r["y_train"][dataset_name]
+                # del f_r["y_train_dt_c"][dataset_name]
                 self.number_of_labels = len(f_r["x_train"])
                 self.name_of_labels = list(f_r["x_train"])
                 if self.row_num != 0:
@@ -275,7 +277,7 @@ class Training_label(QWidget):
                 # create group for arrays
                 xtrain_group = f["x_train"]
                 ytrain_group = f["y_train"]
-                ytrain_DT_C = f.create_group("y_train_dt_c")
+                ytrain_DT_C = f["y_train_dt_c"]
                 dataset_name = self.name_of_labels[
                     self.row_num
                 ]  # f'array_{self.row_num}'
@@ -294,6 +296,7 @@ class Training_label(QWidget):
                 # print(dataset_name, self.total_num_images, self.number_of_labels-1)
                 del f_r["x_train"][dataset_name]
                 del f_r["y_train"][dataset_name]
+                # del f_r["y_train_dt_c"][dataset_name]
                 self.number_of_labels = len(f_r["x_train"])
                 self.name_of_labels = list(f_r["x_train"])
                 if self.row_num != 0:
@@ -321,6 +324,7 @@ class Training_label(QWidget):
             # self.sub_seg_y = y_arrays_group[f'array_{self.row_num}'][:]
 
     def _next_label(self):
+
         if self.row_num < self.number_of_labels - 1:
             self.viewer.layers.clear()
             self.row_num = self.row_num + 1
