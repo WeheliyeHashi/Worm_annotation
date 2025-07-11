@@ -43,6 +43,7 @@ This script extracts grayscale clips of 11 frames from a video, skips frames as 
 - Extracts fixed-length clips (default: 11 frames)
 - Tiles each frame spatially into `512x512` patches
 - Saves data into compressed HDF5 format
+
 ## small code to create data annotation from videos.
 
 ```python
@@ -103,6 +104,7 @@ with h5py.File(save_file, 'a' if save_file.exists() else 'w') as f:
                     clip_idx += 1
 
 cap.release()
+```
 
 ## Example Usage
 
@@ -114,6 +116,4 @@ patch_size = 512
 
 # Then run the script
 python your_script.py
-                
-
 ```
