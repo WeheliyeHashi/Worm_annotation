@@ -45,7 +45,7 @@ This script extracts grayscale clips of 11 frames from a video, skips frames as 
 - Saves data into compressed HDF5 format
 ## small code to create data annotation from videos.
 
-#%%
+```python
 import numpy as np
 import h5py
 import cv2
