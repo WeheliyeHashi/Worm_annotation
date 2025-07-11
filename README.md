@@ -1,9 +1,6 @@
-# Worm_annotation
-
-This is a GUI to annotate deeptangle labels.
-
-
 # Worm Annotation GUI Instructions
+
+<img width="1440" height="900" alt="Screenshot 2025-07-11 at 12 02 47" src="https://github.com/user-attachments/assets/2c5445c4-d41f-4fd2-9412-676f82df07f6" />
 
 ## Frame Selection
 
@@ -41,7 +38,6 @@ The GUI will automatically correct the time order when saving.
 - There are **shortcut keys** available for all buttons in the GUI for quicker navigation and annotation.
 
 
-<img width="1440" height="900" alt="Screenshot 2025-07-11 at 12 02 47" src="https://github.com/user-attachments/assets/2c5445c4-d41f-4fd2-9412-676f82df07f6" />
 
 ## Installation
 
