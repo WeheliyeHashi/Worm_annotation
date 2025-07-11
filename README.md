@@ -45,7 +45,7 @@ This script extracts grayscale clips of 11 frames from a video, skips frames as 
 - Tiles each frame spatially into `512x512` patches
 - Saves data into compressed HDF5 format
 
-## small code to create data annotation from videos.
+## small code to create data annotation from videos.(example_code.py)
 
 ```ruby
 import numpy as np
@@ -117,5 +117,5 @@ frames = 11
 patch_size = 512
 
 # Then run the script
-python your_script.py
+python example_code.py
 ```
