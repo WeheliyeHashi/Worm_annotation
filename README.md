@@ -32,7 +32,8 @@ conda activate Worm_annotation
 git pull
 pip install -e .
 ```
-```
+
+
 # Video Clip Extractor with Spatial Tiling
 
 This script extracts grayscale clips of 11 frames from a video, skips frames as specified, and tiles each clip spatially into non-overlapping `512x512` patches. The resulting patches are saved in an HDF5 file for downstream machine learning or analysis tasks.
@@ -46,7 +47,7 @@ This script extracts grayscale clips of 11 frames from a video, skips frames as 
 
 ## small code to create data annotation from videos.
 
-```python
+```ruby
 import numpy as np
 import h5py
 import cv2
@@ -104,11 +105,12 @@ with h5py.File(save_file, 'a' if save_file.exists() else 'w') as f:
                     clip_idx += 1
 
 cap.release()
+
 ```
 
 ## Example Usage
 
-```python
+```ruby
 video_file = Path("data/video_1.mp4")
 skip_frame = 10
 frames = 11
