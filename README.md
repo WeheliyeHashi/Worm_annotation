@@ -3,6 +3,47 @@
 This is a GUI to annotate deeptangle labels.
 
 <img width="1440" height="900" alt="Screenshot 2025-07-11 at 12 02 47" src="https://github.com/user-attachments/assets/2c5445c4-d41f-4fd2-9412-676f82df07f6" />
+# Worm Annotation GUI Instructions
+
+This README provides guidelines for using the GUI to annotate worms in video clips accurately and consistently.
+
+## Frame Selection
+
+When using the GUI, always focus on annotating the **middle frames: 4, 5, and 6** of each clip.
+
+## Annotation Workflow
+
+- **Annotate one worm at a time.**  
+  If a clip contains multiple worms, select one worm and annotate it across **frames 4, 5, and 6**.
+
+- **After finishing one worm**, move on to the next worm in the clip and repeat the annotation process across frames 4, 5, and 6.
+
+- Once all worms in a clip have been annotated, **save the clip**. This will generate a new file named: correct_skeleton_file.hdf5
+
+
+
+## What *Not* to Do
+
+🚫 **Do not annotate all worms in a single frame first.**  
+For example, avoid labeling all worms in frame 5, then moving to frame 4, and then frame 6. This can cause issues with worm ordering and how they are saved in the output file.
+
+## Correct Approach
+
+✅ The correct way is:
+1. Select a single worm.
+2. Annotate that worm in frames 4, 5, and 6 (in any order).
+3. Then repeat for the next worm.
+
+📝 It’s okay to annotate a worm in frame 5, then frame 6, and go back to frame 4.  
+The GUI will automatically correct the time order when saving.
+
+## Additional Notes
+
+- You can **delete clips** you do not want to keep.
+- There are **shortcut keys** available for all buttons in the GUI for quicker navigation and annotation.
+
+
+
 
 ## Installation
 
