@@ -1,6 +1,7 @@
 # Worm Annotation GUI Instructions
 
-<img width="1440" height="900" alt="Screenshot 2025-07-11 at 12 02 47" src="https://github.com/user-attachments/assets/2c5445c4-d41f-4fd2-9412-676f82df07f6" />
+<img width="1421" height="814" alt="Screenshot 2025-07-13 at 14 12 53" src="https://github.com/user-attachments/assets/0b646241-b62a-4686-9238-f2e00e06a4c8" />
+
 
 ## Frame Selection
 
