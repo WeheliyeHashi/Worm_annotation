@@ -4,25 +4,18 @@ from pathlib import Path
 import h5py
 import numpy as np
 import scipy.interpolate
-from magicgui import magic_factory
-from napari_plugin_engine import napari_hook_implementation
-from PyQt5 import QtWidgets
-from PyQt5.QtGui import QIcon, QKeySequence
-from PyQt5.QtWidgets import QMessageBox
-from qtpy.QtCore import QDir
-from qtpy.QtWidgets import (
+from PyQt5.QtGui import QKeySequence
+from PyQt5.QtWidgets import (
+    QMessageBox,
+    QComboBox,
     QFileDialog,
-    QGridLayout,
-    QHBoxLayout,
     QLabel,
     QLineEdit,
     QPushButton,
-    QRadioButton,
     QShortcut,
     QVBoxLayout,
     QWidget,
 )
-from scipy.spatial.distance import cdist
 
 
 class Training_label(QWidget):
@@ -31,7 +24,6 @@ class Training_label(QWidget):
         self.viewer = napari_viewer
 
         self.lastdir = ""
-        # print(self.lastdir)
         self.lastfile = ""
         self.basename = ""
         self.sub_seg_x = []
@@ -40,73 +32,99 @@ class Training_label(QWidget):
         self.row_num = 0
         self.name_of_labels = ""
 
-        # %%  Load Training button
-        training_btn = QPushButton("Load Data ('.hdf5')")
+        # %% Load Training button
+        training_btn = QPushButton("Load Data (*.hdf5)")
+        training_btn.setToolTip("Load training data from an HDF5 file.")
         training_btn.setFixedHeight(100)
-        training_btn.setFixedWidth(200)
-        training_btn.setStyleSheet("font-size: 20px")
+        training_btn.setFixedWidth(150)
+        training_btn.setStyleSheet("font-size: 16px; color: white;")
         training_btn.clicked.connect(self._add_models)
 
-        # %% good label the next label button
+        # %% Next Label button
         next_label_btn = QPushButton("Next Label ->")
-        next_label_btn.setFixedHeight(100)
-        next_label_btn.setFixedWidth(200)
-        next_label_btn.setStyleSheet(" color: rgb(0, 0, 0); font-size: 20px")
+        next_label_btn.setFixedHeight(50)
+        next_label_btn.setFixedWidth(150)
+        next_label_btn.setStyleSheet("font-size: 14px; color: white;")
         next_label_btn.clicked.connect(self._next_label)
         next_label_btn.setToolTip("Shortcut: .")
 
-        # %% Bad Label
-        prev_label_btn = QPushButton("<-Previous label")
-        prev_label_btn.setFixedHeight(100)
-        prev_label_btn.setFixedWidth(200)
-        prev_label_btn.setStyleSheet("color: rgb(0, 0, 0); font-size: 20px")
+        # %% Previous Label button
+        prev_label_btn = QPushButton("<- Previous Label")
+        prev_label_btn.setFixedHeight(50)
+        prev_label_btn.setFixedWidth(150)
+        prev_label_btn.setStyleSheet("font-size: 14px; color: white;")
         prev_label_btn.clicked.connect(self._prev_label)
         prev_label_btn.setToolTip("Shortcut: ,")
 
-        # %% Save Changes
-        self.save_label_btn = QPushButton("Save changes")
-        self.save_label_btn.setFixedHeight(100)
-        self.save_label_btn.setFixedWidth(200)
-        self.save_label_btn.setStyleSheet(
-            "background-color: green ; color: rgb(255, 255, 255); font-size: 20px"
-        )
+        # %% Reset Canvas button
+        reset_canvas_btn = QPushButton("Clear all")
+        reset_canvas_btn.setFixedHeight(80)
+        reset_canvas_btn.setFixedWidth(150)
+        reset_canvas_btn.setStyleSheet("background-color: orange; font-size: 14px; color: black;")
+        reset_canvas_btn.clicked.connect(self._reset_canvas)
+        reset_canvas_btn.setToolTip("Shortcut: R")
+
+        # %% Save Changes button
+        self.save_label_btn = QPushButton("Save Changes")
+        self.save_label_btn.setFixedHeight(80)
+        self.save_label_btn.setFixedWidth(150)
+        self.save_label_btn.setStyleSheet("background-color: green; font-size: 14px; color: black;")
         self.save_label_btn.clicked.connect(self._save_label)
         self.save_label_btn.setToolTip("Shortcut: S")
 
-        # %% Labels training
-        self.Training_label_text = QLabel("Label number: ")
-        self.Training_label_text.setStyleSheet(
-            "color: rgb(255, 255, 255); font-size: 20px"
-        )
-
-        # %%  Delete item
-        self.delete_btn = QPushButton("Delete clip")
-        self.delete_btn.setFixedHeight(100)
-        self.delete_btn.setFixedWidth(200)
-        self.delete_btn.setStyleSheet(
-            "background-color: red ; color: rgb(255, 255, 255); font-size: 20px"
-        )
+        # %% Delete item button
+        self.delete_btn = QPushButton("Delete Clip")
+        self.delete_btn.setFixedHeight(80)
+        self.delete_btn.setFixedWidth(150)
+        self.delete_btn.setStyleSheet("background-color: red; font-size: 14px; color: black;")
         self.delete_btn.clicked.connect(self._delete_clip_)
         self.delete_btn.setToolTip("Shortcut: D")
 
-        # %% String
+        # %% Dropdown list for toggling views
+        self.view_toggle_dropdown = QComboBox()
+        self.view_toggle_dropdown.addItems(["Show skeletons", "Bounding Box"])
+        self.view_toggle_dropdown.setFixedHeight(100)
+        self.view_toggle_dropdown.setFixedWidth(150)  # Increased width for better visibility
+        self.view_toggle_dropdown.setStyleSheet("""
+            QComboBox {
+                background-color: lightblue;
+                font-size: 14px;  /* Increased font size */
+                color: black;
+                border: 1px solid black;
+            }
+            QComboBox QAbstractItemView {
+                background-color: white;  /* Dropdown options background */
+                color: black;  /* Dropdown options text color */
+                selection-background-color: lightgray;  /* Highlight color for selected option */
+                selection-color: black;
+            }
+        """)
+        self.view_toggle_dropdown.currentTextChanged.connect(self._toggle_view)
+
+        # %% Labels training
+        self.Training_label_text = QLabel("Label number: ")
+        self.Training_label_text.setStyleSheet("font-size: 14px; color: white;")
+
+        # %% String input
         self.text_label = QLineEdit("")
-        self.text_label.setStyleSheet("color: rgb(255, 255, 255); font-size: 20px")
+        self.text_label.setFixedHeight(50)
+        self.text_label.setFixedWidth(150)
+        self.text_label.setStyleSheet("font-size: 14px; color: white;")
         self.text_label.editingFinished.connect(lambda: self.pressenter())
 
-        # hbox = QVBoxLayout()
+        # Layout setup
         self.setLayout(QVBoxLayout())
-        self.layout().addWidget((training_btn))
+        self.layout().addWidget(training_btn)
         self.layout().addWidget(next_label_btn)
         self.layout().addWidget(prev_label_btn)
         self.layout().addWidget(self.save_label_btn)
+        self.layout().addWidget(self.delete_btn)
+        self.layout().addWidget(reset_canvas_btn)
+        self.layout().addWidget(self.view_toggle_dropdown)
         self.layout().addWidget(self.Training_label_text)
         self.layout().addWidget(self.text_label)
-        self.layout().addWidget(self.delete_btn)
 
-        # self.layout().addLayout(hbox)
-
-        """ Short cut keys """
+        # Shortcut keys
         shortcut = QShortcut(QKeySequence("D"), self)
         shortcut.activated.connect(self._delete_clip_)
         shortcut = QShortcut(QKeySequence("S"), self)
@@ -115,6 +133,8 @@ class Training_label(QWidget):
         shortcut.activated.connect(self._prev_label)
         shortcut = QShortcut(QKeySequence("."), self)
         shortcut.activated.connect(self._next_label)
+        shortcut = QShortcut(QKeySequence("R"), self)
+        shortcut.activated.connect(self._reset_canvas)
 
     # self.layout().addWidget(model_btn)
     def _message_error(self):
@@ -207,130 +227,65 @@ class Training_label(QWidget):
     def _save_label(self):
         num_worms = len(self.viewer.layers["Points"].data)
 
-        Point_List = []
         if num_worms % 3 != 0:
             self._message_error()
-        else:
-            Point_List = []
-            for worm_data in self.viewer.layers["Points"].data:
-                x = worm_data[:, 2]
-                y = worm_data[:, 1]
-                if x.all() != 0:
-                    x_new, y_new = self._smooth_data(x, y)
-                    Points = np.array(
-                        list(zip(np.repeat(worm_data[0, 0], 49), y_new, x_new))
-                    )
-                    Point_List.append(Points)
-            n_worms_t = int(len(Point_List) / 3)
-            Y_train = self._return_DT_C_label(Point_List, n_worms_t)
-            self._save_corrected_files(Point_List, Y_train)
+            return
 
-    def _save_corrected_files(
-        self, Point_List, Y_train, filename="Corrected_training_files.hdf5"
-    ):
-        if not Path(os.path.join(self.lastdir, filename)).exists():
-            with h5py.File(os.path.join(self.lastdir, filename), "w") as f, h5py.File(
-                (self.lastfile), "a"
-            ) as f_r:
-                # create group for arrays
-                xtrain_group = f.create_group("x_train")
-                ytrain_group = f.create_group("y_train")
-                ytrain_DT_C = f.create_group("y_train_dt_c")
+        Point_List = []
+        for worm_data in self.viewer.layers["Points"].data:
+            x, y = worm_data[:, 2], worm_data[:, 1]
+            if x.any():
+                x_new, y_new = self._smooth_data(x, y)
+                Points = np.array(
+                    list(zip(np.repeat(worm_data[0, 0], 49), y_new, x_new))
+                )
+                Point_List.append(Points)
 
-                dataset_name = self.name_of_labels[
-                    self.row_num
-                ]  # f'array_{self.row_num}'
-                print(dataset_name)
-                xtrain_group.create_dataset(
-                    dataset_name,
-                    data=self.viewer.layers["image"].data,
-                    compression="gzip",
-                )
-                # Y = [y_arr for y_arr in Point_List if y_arr.all() != 0]
-                ytrain_group.create_dataset(
-                    dataset_name, data=Point_List, compression="gzip"
-                )
+        n_worms_t = len(Point_List) // 3
+        Y_train = self._return_DT_C_label(Point_List, n_worms_t)
+        self._save_corrected_files(Point_List, Y_train)
 
-                ytrain_DT_C.create_dataset(
-                    dataset_name, data=Y_train, compression="gzip"
-                )
+    def _save_corrected_files(self, Point_List, Y_train, filename="Corrected_training_files.hdf5"):
+        file_path = os.path.join(self.lastdir, filename)
+        mode = "w" if not Path(file_path).exists() else "a"
 
-                # print(dataset_name, self.total_num_images, self.number_of_labels-1)
-                del f_r["x_train"][dataset_name]
-                del f_r["y_train"][dataset_name]
-                # del f_r["y_train_dt_c"][dataset_name]
-                self.number_of_labels = len(f_r["x_train"])
-                self.name_of_labels = list(f_r["x_train"])
-                if self.row_num != 0:
-                    self.row_num = self.row_num - 1
-                else:
-                    self.row_num = 0
-                self.Training_label_text.setText(
-                    f"Label number: {self.row_num} out of {self.number_of_labels-1}"
-                )
-                self.text_label.setText(f"{self.row_num}")
-            self._next_label()
-        else:
-            with h5py.File(os.path.join(self.lastdir, filename), "a") as f, h5py.File(
-                (self.lastfile), "a"
-            ) as f_r:
-                # create group for arrays
-                xtrain_group = f["x_train"]
-                ytrain_group = f["y_train"]
-                ytrain_DT_C = f["y_train_dt_c"]
-                dataset_name = self.name_of_labels[
-                    self.row_num
-                ]  # f'array_{self.row_num}'
-                xtrain_group.create_dataset(
-                    dataset_name,
-                    data=self.viewer.layers["image"].data,
-                    compression="gzip",
-                )
-                ytrain_group.create_dataset(
-                    dataset_name, data=Point_List, compression="gzip"
-                )
-                ytrain_DT_C.create_dataset(
-                    dataset_name, data=Y_train, compression="gzip"
-                )
+        with h5py.File(file_path, mode) as f, h5py.File(self.lastfile, "a") as f_r:
+            xtrain_group = f.require_group("x_train")
+            ytrain_group = f.require_group("y_train")
+            ytrain_DT_C = f.require_group("y_train_dt_c")
 
-                # print(dataset_name, self.total_num_images, self.number_of_labels-1)
-                del f_r["x_train"][dataset_name]
-                del f_r["y_train"][dataset_name]
-                # del f_r["y_train_dt_c"][dataset_name]
-                self.number_of_labels = len(f_r["x_train"])
-                self.name_of_labels = list(f_r["x_train"])
-                if self.row_num != 0:
-                    self.row_num = self.row_num - 1
-                else:
-                    self.row_num = 0
-                self.Training_label_text.setText(
-                    f"Label number: {self.row_num} out of {self.number_of_labels-1}"
-                )
-                self.text_label.setText(f"{self.row_num}")
-            self._next_label()
+            dataset_name = self.name_of_labels[self.row_num]
+            xtrain_group.create_dataset(dataset_name, data=self.viewer.layers["image"].data, compression="gzip")
+            ytrain_group.create_dataset(dataset_name, data=Point_List, compression="gzip")
+            ytrain_DT_C.create_dataset(dataset_name, data=Y_train, compression="gzip")
+
+            del f_r["x_train"][dataset_name]
+            del f_r["y_train"][dataset_name]
+
+            self.number_of_labels = len(f_r["x_train"])
+            self.name_of_labels = list(f_r["x_train"])
+            self.row_num = max(0, self.row_num - 1)
+
+            self.Training_label_text.setText(f"Label number: {self.row_num} out of {self.number_of_labels-1}")
+            self.text_label.setText(f"{self.row_num}")
+
+        self._next_label()
 
     def _update_label(self):
-        with h5py.File((self.lastfile), "r+") as f:
+        with h5py.File(self.lastfile, "r+") as f:
             arrays_group = f["x_train"]
             y_arrays_group = f["y_train"]
             self.number_of_labels = len(arrays_group)
-
-            # for dataset_name_x, dataset_name_y in (zip(arrays_group,y_arrays_group)):
-            # self.number_of_labels+=1
-
             self.sub_seg_x = arrays_group[self.name_of_labels[self.row_num]][:]
             self.sub_seg_y = y_arrays_group[self.name_of_labels[self.row_num]][:]
-            # self.sub_seg_x = arrays_group[f'array_{self.row_num}'][:]
-            # self.sub_seg_y = y_arrays_group[f'array_{self.row_num}'][:]
 
     def _next_label(self):
 
         if self.row_num < self.number_of_labels - 1:
             self.viewer.layers.clear()
-            self.row_num = self.row_num + 1
-            row = self.row_num
+            self.row_num += 1
             self._update_label()
-            self._show_images(row)
+            self._show_images(self.row_num)
             self.Training_label_text.setText(
                 f"Label number: {self.row_num} out of {self.number_of_labels-1}"
             )
@@ -340,13 +295,11 @@ class Training_label(QWidget):
 
     def _prev_label(self):
         # print(self.row_num)
-        if self.row_num >= 0 and self.row_num < self.number_of_labels - 1:
+        if 0 <= self.row_num < self.number_of_labels - 1:
             self.viewer.layers.clear()
-            if self.row_num != 0:
-                self.row_num = self.row_num - 1
-            row = self.row_num
+            self.row_num = max(0, self.row_num - 1)
             self._update_label()
-            self._show_images(row)
+            self._show_images(self.row_num)
             self.Training_label_text.setText(
                 f"Label number: {self.row_num} out of {self.number_of_labels-1}"
             )
@@ -355,86 +308,35 @@ class Training_label(QWidget):
             self.row_num = self.number_of_labels - 1
 
     def _show_images(self, row_num=0):
-        if (
-            row_num <= self.number_of_labels - 1
-            and self.basename != "Corrected_training_files.hdf5"
-        ):
+        if row_num <= self.number_of_labels - 1 and self.basename != "Corrected_training_files.hdf5":
             self.save_label_btn.setDisabled(False)
             self.save_label_btn.setVisible(True)
-            X_batch = self.sub_seg_x
-            Y_batch = self.sub_seg_y
-            # print(Y_batch.shape)
-            batch_num = 0  # X_batch.shape[0]-1
-            Point_List = []
-
-            for j in range(Y_batch.shape[1]):
-                k = 3
-                for i in range(Y_batch.shape[2]):
-                    k += 1
-                    Points = Y_batch[batch_num, j, i, :, :]
-                    Points = list(
-                        zip(np.repeat(k, 49), (Points[::4, 1]), (Points[::4, 0]))
-                    )
-                    Point_List.append(Points)
-
-            n_worms = int(np.array(Point_List).shape[0] / 3)
-            edge_color_cycle = [
-                "blue",
-                "red",
-                "green",
-                "magenta",
-                "yellow",
-                "cyan",
-                "grey",
+            X_batch, Y_batch = self.sub_seg_x, self.sub_seg_y
+            Point_List = [
+                list(zip(np.repeat(3 + i + 1, 49), Points[::4, 1], Points[::4, 0]))
+                for j in range(Y_batch.shape[1])
+                for i, Points in enumerate(Y_batch[0, j])
             ]
-            features = {
-                "class": list(np.repeat([f"worm_{i}" for i in range(n_worms)], 3)),
-            }
-            self.viewer.add_image(X_batch[batch_num, :, :, :], name="image")
-            # self.viewer.add_points(Point_List, size=3, face_color='red')
-            # self.viewer.add_shapes(Point_List, shape_type="path", edge_width=2, edge_color='red', opacity=0.6, name ='Points')
-            self.viewer.add_shapes(
-                Point_List,
-                shape_type="path",
-                features=features,
-                edge_color="class",
-                edge_width=2,
-                edge_color_cycle=edge_color_cycle[:n_worms],
-                opacity=0.6,
-                name="Points",
-            )
         else:
-            # print(self.sub_seg_x[0,:].shape)
-            # print(self.sub_seg_y[0].shape)
             self.save_label_btn.setDisabled(True)
             self.save_label_btn.setVisible(False)
-            X_batch = self.sub_seg_x
-            Point_List = self.sub_seg_y
-            n_worms = int(np.array(Point_List).shape[0] / 3)
-            edge_color_cycle = [
-                "blue",
-                "red",
-                "green",
-                "magenta",
-                "yellow",
-                "cyan",
-                "grey",
-            ]
-            features = {
-                "class": list(np.repeat([f"worm_{i}" for i in range(n_worms)], 3)),
-            }
-            self.viewer.add_image(X_batch, name="image")
-            # self.viewer.add_points(Point_List, size=3, face_color='red')
-            self.viewer.add_shapes(
-                Point_List,
-                shape_type="path",
-                features=features,
-                edge_color="class",
-                edge_width=2,
-                edge_color_cycle=edge_color_cycle[:n_worms],
-                opacity=0.6,
-                name="Points",
-            )
+            X_batch, Point_List = self.sub_seg_x, self.sub_seg_y
+
+        n_worms = len(Point_List) // 3
+        edge_color_cycle = ["blue", "red", "green", "magenta", "yellow", "cyan", "grey"]
+        features = {"class": list(np.repeat([f"worm_{i}" for i in range(n_worms)], 3))}
+
+        self.viewer.add_image(X_batch, name="image")
+        self.viewer.add_shapes(
+            Point_List,
+            shape_type="path",
+            features=features,
+            edge_color="class",
+            edge_width=2,
+            edge_color_cycle=edge_color_cycle[:n_worms],
+            opacity=0.6,
+            name="Points",
+        )
 
     def _delete_clip_(self):
         with h5py.File((self.lastfile), "a") as f_r:
@@ -453,3 +355,87 @@ class Training_label(QWidget):
             )
             self.text_label.setText(f"{self.row_num}")
         self._next_label()
+
+    def _reset_canvas(self):
+        """Clears all layers, images, and data from Napari and resets to the initial state."""
+        self.viewer.layers.clear()  # Remove all layers from Napari
+        self.sub_seg_x = []  # Reset image data
+        self.sub_seg_y = []  # Reset label data
+        self.number_of_labels = 0  # Reset label count
+        self.row_num = 0  # Reset row number
+        self.name_of_labels = ""  # Reset label names
+        self.Training_label_text.setText("Label number: ")  # Reset label text
+        self.text_label.setText("")  # Clear text input
+
+    def _toggle_view(self, selected_view):
+        """Toggle between showing images and bounding box."""
+        if selected_view == "Bounding Box":
+            self._show_bounding_box()
+        elif selected_view == "Show skeletons":
+            # Clear the bounding box layer if it exists
+            if "Bounding Boxes" in self.viewer.layers:
+                self.viewer.layers.remove("Bounding Boxes")
+            
+            # Activate the "Points" layer
+            points_layer = next((layer for layer in self.viewer.layers if layer.name == "Points"), None)
+            if points_layer:
+                self.viewer.layers.selection.active = points_layer
+            
+            # Show skeletons
+            #self._show_images(self.row_num)
+
+    def _show_bounding_box(self):
+        """Display bounding box around skeletons for frames 4, 5, and 6."""
+        # Ensure the "Points" layer exists
+        points_layer = next((layer for layer in self.viewer.layers if layer.name == "Points"), None)
+        if points_layer is None:
+            self._message_warning("Please draw at least one skeleton before viewing a bounding box.")
+            return
+
+        # Remove origin data points (e.g., [0, 0]) and filter for frames 4, 5, and 6
+        filtered_data = [
+            worm_data for worm_data in points_layer.data
+            if not np.all(worm_data == 0) 
+        ]
+
+        if not filtered_data:
+            self._message_warning("No skeletons found for frames 4, 5, or 6.")
+            return
+
+        bounding_boxes = []
+        for worm_data in filtered_data:
+            x, y = worm_data[:, 2], worm_data[:, 1]
+            if x.any():
+                y_min, y_max = np.min(x)-10, np.max(x)+10
+                x_min, x_max = np.min(y)-10, np.max(y)+10
+                for frame in range(4, 7):
+                    bounding_boxes.append([[frame,x_min, y_min], [frame,x_max, y_min], [frame, x_max, y_max], [frame,x_min, y_max]])
+       
+        n_worms = len(bounding_boxes) // 3
+        edge_color_cycle = ["blue", "red", "green", "magenta", "yellow", "cyan", "grey"]
+        features = {"class": list(np.repeat([f"worm_{i}" for i in range(n_worms)], 3))}
+
+
+        self.viewer.add_shapes(
+            bounding_boxes,
+            shape_type="rectangle",
+            features=features,
+            face_color="transparent",
+            edge_color="class",
+            edge_width=2,
+            edge_color_cycle=edge_color_cycle[:n_worms],
+            # edge_color="yellow",
+            # face_color="transparent",
+            # edge_width=2,
+            opacity=1,
+            name="Bounding Boxes",
+        )
+
+    def _message_warning(self, message):
+        """Display a warning message."""
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Warning)
+        msg.setText("Warning")
+        msg.setInformativeText(message)
+        msg.setWindowTitle("Warning")
+        msg.exec_()
