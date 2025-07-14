@@ -355,7 +355,9 @@ class Training_label(QWidget):
         else:
             # self.save_label_btn.setDisabled(True)
             # self.save_label_btn.setVisible(False)
-            X_batch, Point_List = self.sub_seg_x, self.sub_seg_y
+            X_batch = self.sub_seg_x 
+            Point_List = [[pt for i, pt in enumerate(path) if i % 4 == 0] for path in self.sub_seg_y]
+            
 
         n_worms = len(Point_List) // 3
         edge_color_cycle = ["blue", "red", "green", "magenta", "yellow", "cyan", "grey"]
