@@ -14,7 +14,7 @@ When using the GUI, always focus on annotating the **middle frames: 4, 5, and 6*
 
 - **After finishing one worm**, move on to the next worm in the clip and repeat the annotation process across frames 4, 5, and 6.
 
-- Once all worms in a clip have been annotated, **save the clip**. This will generate a new file named: correct_skeleton_file.hdf5
+- Once all worms in a clip have been annotated, **save the clip**. This will generate a new file named: original_videoname_Corrected_training_file.hdf5
 
 
 
