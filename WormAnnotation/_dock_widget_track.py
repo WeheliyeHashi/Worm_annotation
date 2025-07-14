@@ -153,16 +153,15 @@ class Training_label(QWidget):
             "*.hdf5",
             # options=QFileDialog.DontUseNativeDialog,
         )
-        # print(fileNames, 'Hashi')
-        # fileNames = ['Training_data/skeletonNN.hdf5']
+       
         for file in fileNames:
             self.lastdir = os.path.dirname(file)
             name, _ = os.path.splitext(file)
 
-            print(self.lastdir, "weheliye")
-            # print(name)
+          
             self.lastfile = file
-            self.basename = os.path.basename(file)
+            self.basename = Path(file).stem  #os.path.basename(file)
+            #print(self.basename)
             with h5py.File((file), "r+") as f:
                 arrays_group = f["x_train"]
                 y_arrays_group = f["y_train"]
@@ -245,29 +244,64 @@ class Training_label(QWidget):
         Y_train = self._return_DT_C_label(Point_List, n_worms_t)
         self._save_corrected_files(Point_List, Y_train)
 
-    def _save_corrected_files(self, Point_List, Y_train, filename="Corrected_training_files.hdf5"):
-        file_path = os.path.join(self.lastdir, filename)
-        mode = "w" if not Path(file_path).exists() else "a"
+    def _save_corrected_files(self, Point_List, Y_train):
+        # Check if self.basename contains "_Corrected_training_file.hdf5"
+        if "_Corrected_training_file" in self.basename:
+            # Open the existing file for editing
+            file_path = os.path.join(self.lastdir, f"{self.basename}.hdf5")
+            with h5py.File(file_path, "a") as f:
+                xtrain_group = f["x_train"]
+                ytrain_group = f["y_train"]
+                ytrain_DT_C = f["y_train_dt_c"]
 
-        with h5py.File(file_path, mode) as f, h5py.File(self.lastfile, "a") as f_r:
-            xtrain_group = f.require_group("x_train")
-            ytrain_group = f.require_group("y_train")
-            ytrain_DT_C = f.require_group("y_train_dt_c")
+                dataset_name = self.name_of_labels[self.row_num]
 
-            dataset_name = self.name_of_labels[self.row_num]
-            xtrain_group.create_dataset(dataset_name, data=self.viewer.layers["image"].data, compression="gzip")
-            ytrain_group.create_dataset(dataset_name, data=Point_List, compression="gzip")
-            ytrain_DT_C.create_dataset(dataset_name, data=Y_train, compression="gzip")
+                # Replace existing datasets with updated data
+                if dataset_name in xtrain_group:
+                    del xtrain_group[dataset_name]
+                xtrain_group.create_dataset(dataset_name, data=self.viewer.layers["image"].data, compression="gzip")
 
-            del f_r["x_train"][dataset_name]
-            del f_r["y_train"][dataset_name]
+                if dataset_name in ytrain_group:
+                    del ytrain_group[dataset_name]
+                ytrain_group.create_dataset(dataset_name, data=Point_List, compression="gzip")
 
-            self.number_of_labels = len(f_r["x_train"])
-            self.name_of_labels = list(f_r["x_train"])
-            self.row_num = max(0, self.row_num - 1)
+                if dataset_name in ytrain_DT_C:
+                    del ytrain_DT_C[dataset_name]
+                ytrain_DT_C.create_dataset(dataset_name, data=Y_train, compression="gzip")
 
-            self.Training_label_text.setText(f"Label number: {self.row_num} out of {self.number_of_labels-1}")
-            self.text_label.setText(f"{self.row_num}")
+                # Update label information
+                self.number_of_labels = len(xtrain_group)
+                self.name_of_labels = list(xtrain_group)
+                self.row_num = max(0, self.row_num - 1)
+
+                self.Training_label_text.setText(f"Label number: {self.row_num} out of {self.number_of_labels-1}")
+                self.text_label.setText(f"{self.row_num}")
+        else:
+            # Remove "annotations" from self.basename
+            sanitized_basename = self.basename.replace("annotations", "")
+            filename = f"{sanitized_basename}_Corrected_training_file.hdf5"
+            file_path = os.path.join(self.lastdir, filename)
+            mode = "w" if not Path(file_path).exists() else "a"
+
+            with h5py.File(file_path, mode) as f, h5py.File(self.lastfile, "a") as f_r:
+                xtrain_group = f.require_group("x_train")
+                ytrain_group = f.require_group("y_train")
+                ytrain_DT_C = f.require_group("y_train_dt_c")
+
+                dataset_name = self.name_of_labels[self.row_num]
+                xtrain_group.create_dataset(dataset_name, data=self.viewer.layers["image"].data, compression="gzip")
+                ytrain_group.create_dataset(dataset_name, data=Point_List, compression="gzip")
+                ytrain_DT_C.create_dataset(dataset_name, data=Y_train, compression="gzip")
+
+                del f_r["x_train"][dataset_name]
+                del f_r["y_train"][dataset_name]
+
+                self.number_of_labels = len(f_r["x_train"])
+                self.name_of_labels = list(f_r["x_train"])
+                self.row_num = max(0, self.row_num - 1)
+
+                self.Training_label_text.setText(f"Label number: {self.row_num} out of {self.number_of_labels-1}")
+                self.text_label.setText(f"{self.row_num}")
 
         self._next_label()
 
@@ -308,7 +342,8 @@ class Training_label(QWidget):
             self.row_num = self.number_of_labels - 1
 
     def _show_images(self, row_num=0):
-        if row_num <= self.number_of_labels - 1 and self.basename != "Corrected_training_files.hdf5":
+        if row_num <= self.number_of_labels - 1 and "_Corrected_training_file" not in self.basename: #self.basename != "Corrected_training_files.hdf5":
+            # print("wrong file",self.basename)
             self.save_label_btn.setDisabled(False)
             self.save_label_btn.setVisible(True)
             X_batch, Y_batch = self.sub_seg_x, self.sub_seg_y
@@ -318,8 +353,8 @@ class Training_label(QWidget):
                 for i, Points in enumerate(Y_batch[0, j])
             ]
         else:
-            self.save_label_btn.setDisabled(True)
-            self.save_label_btn.setVisible(False)
+            # self.save_label_btn.setDisabled(True)
+            # self.save_label_btn.setVisible(False)
             X_batch, Point_List = self.sub_seg_x, self.sub_seg_y
 
         n_worms = len(Point_List) // 3
